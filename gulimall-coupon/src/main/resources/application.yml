@@ -2,6 +2,12 @@ server:
   port: 7000
 
 spring:
+  application:
+    name: gulimall-coupon
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
   datasource:
     url: jdbc:mysql://localhost:3306/gulimall_sms
     username: root
