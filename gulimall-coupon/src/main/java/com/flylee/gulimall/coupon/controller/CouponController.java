@@ -5,6 +5,8 @@ import com.flylee.gulimall.common.utils.R;
 import com.flylee.gulimall.coupon.entity.CouponEntity;
 import com.flylee.gulimall.coupon.service.CouponService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -21,10 +23,24 @@ import java.util.Map;
  * @date 2022-06-23 19:30:58
  */
 @RestController
+// 设置动态刷新
+@RefreshScope
 @RequestMapping("coupon/coupon")
 public class CouponController {
     @Autowired
     private CouponService couponService;
+
+    @Value("${coupon.user.name}")
+    private String couponUserName;
+
+    /**
+     * 测试获取配置信息
+     * @return 配置信息
+     */
+    @RequestMapping("/config-info")
+    public R getConfigInfo() {
+        return R.ok().put("name", couponUserName);
+    }
 
     /**
      * 测试OpenFeign
