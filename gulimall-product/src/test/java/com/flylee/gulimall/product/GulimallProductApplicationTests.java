@@ -3,7 +3,7 @@ package com.flylee.gulimall.product;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.flylee.gulimall.product.entity.BrandEntity;
 import com.flylee.gulimall.product.service.BrandService;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;

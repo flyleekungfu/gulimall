@@ -10,3 +10,11 @@ spring:
           uri: https://www.qq.com/
           predicates:
             - Query=url, qq
+        #将路径为Path=/api/**转发至后台管理
+        - id: admin_route
+          uri: lb://renren-fast
+          predicates:
+            - Path=/api/**
+          filters:
+            # 重写路径，没有重写路径，请求：{gateway-url}/api/user，会转发到：{api-url}/api/user，配置后为：{api-url}/renre-fast/user
+            - RewritePath=/api/?(?<segment>.*), /renren-fast/$\{segment}
