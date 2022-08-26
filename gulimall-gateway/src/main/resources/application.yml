@@ -10,6 +10,13 @@ spring:
           uri: https://www.qq.com/
           predicates:
             - Query=url, qq
+        # 这个需要放在admin_route的前面，范围更小点，不然请求这个路径会先匹配admin_route
+        - id: product-route
+          uri: lb://gulimall-product
+          predicates:
+            - Path=/api/product/**
+          filters:
+            - RewritePath=/api/?(?<segment>.*), /$\{segment}
         #将路径为Path=/api/**转发至后台管理
         - id: admin_route
           uri: lb://renren-fast
