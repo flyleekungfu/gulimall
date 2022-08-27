@@ -37,6 +37,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                 .sorted(Comparator.comparingInt(c -> (c.getSort() == null ? 0 : c.getSort()))).collect(Collectors.toList());
     }
 
+    @Override
+    public void removeMenuByIds(List<Long> ids) {
+        baseMapper.deleteBatchIds(ids);
+    }
+
     private List<CategoryEntity> getChildren(CategoryEntity categoryEntity, List<CategoryEntity> categoryEntities) {
         return categoryEntities.stream().filter(c -> c.getParentCid().equals(categoryEntity.getCatId()))
                 .peek(eachCategoryEntity -> eachCategoryEntity.setChildren(getChildren(eachCategoryEntity, categoryEntities)))
