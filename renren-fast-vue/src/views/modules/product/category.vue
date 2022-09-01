@@ -5,6 +5,9 @@
              node-key="catId"
              :default-expanded-keys="expandedKeys"
              :expand-on-click-node="false"
+             draggable
+             :allow-drop="allowDrop"
+             @node-drop="handleDrop"
              :props="defaultProps">
     <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
@@ -65,6 +68,9 @@ export default {
       dialogType: '', // add,edit
       // 弹窗标题
       title: '',
+      maxLevel: 0,
+      // 要更新的节点列表
+      updateNodes: [],
       category: {
         catId: '',
         name: '',
@@ -190,6 +196,81 @@ export default {
         this.expandedKeys = [this.category.parentCid]
         this.dialogVisible = false
       })
+    },
+    allowDrop (draggingNode, dropNode, type) {
+      console.log('allowDrop:', draggingNode, dropNode, type)
+
+      // 1、被拖动的当前节点以及所在的父节点总层数不能大于3
+      // 1）、被拖动的当前节点总层数
+      this.countNodeLevel(draggingNode)
+      // 当前正在拖动的节点+父节点所在的深度不大于3即可
+      let deep = Math.abs(this.maxLevel - draggingNode.level) + 1
+      console.log('深度：', deep)
+
+      //   this.maxLevel
+      if (type === 'inner') {
+        // console.log(
+        //   `this.maxLevel：${this.maxLevel}；draggingNode.data.catLevel：${draggingNode.data.catLevel}；dropNode.level：${dropNode.level}`
+        // );
+        return deep + dropNode.level <= 3
+      } else {
+        return deep + dropNode.parent.level <= 3
+      }
+    },
+    countNodeLevel (node) {
+      if (node.childNodes && node.childNodes.length !== 0) {
+        for (let i = 0; i < node.childNodes.length; i++) {
+          if (node.childNodes[i].level > this.maxLevel) {
+            this.maxLevel = node.childNodes[i].level
+          }
+          this.countNodeLevel(node.childNodes[i])
+        }
+      }
+    },
+    handleDrop: function (draggingNode, dropNode, dropType, ev) {
+      // 1、当前节点最新的父节点id
+      let pCid
+      let siblings
+      if (dropType === 'before' || dropType === 'after') {
+        pCid = dropNode.parent.data.catId === undefined ? 0 : dropNode.parent.data.catId
+        siblings = dropNode.parent.childNodes
+      } else {
+        pCid = dropNode.data.catId
+        siblings = dropNode.childNodes
+      }
+
+      // 2、当前拖拽节点的最新顺序
+      for (let i = 0; i < siblings.length(); i++) {
+        if (siblings[i].data.catId === draggingNode.data.catId) {
+          // 如果遍历的是当前正在拖拽的节点
+          let catLevel = draggingNode.level
+          if (siblings[i].level !== catLevel) {
+            // 当前节点层级发生变化
+            catLevel = siblings[i].level
+            // 设置当前节点子节点层级
+            this.updateChildNodeLevel(siblings[i])
+          }
+          this.updateNodes.push({
+            catId: siblings[i].data.catId,
+            sort: i,
+            parentCid: pCid,
+            catLevel: catLevel
+          })
+        } else {
+          this.updateNodes.push({catId: siblings[i].data.catId, sort: i})
+        }
+      }
+
+      // 3、当前拖拽节点的最新层级
+      console.log('updateNodes', this.updateNodes)
+    },
+    updateChildNodeLevel (node) {
+      if (node.childNodes && node.childNodes.length !== 0) {
+        for (let i = 0; i < this.childNodes.length(); i++) {
+          this.updateNodes.push({catId: this.childNodes[i].data.catId, catLevel: this.childNodes[i].level})
+          this.updateChildNodeLevel(node.childNodes[i])
+        }
+      }
     }
   }
 }
