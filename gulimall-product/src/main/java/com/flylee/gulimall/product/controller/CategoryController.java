@@ -72,6 +72,17 @@ public class CategoryController {
     }
 
     /**
+     * 更新拖拽节点后的节点信息（包含节点的顺序和节点层级的更新）
+     * @param categoryEntities 目录实体列表
+     * @return 更新是否成功
+     */
+    @RequestMapping("/update/sort")
+    public R updateSort(@RequestBody List<CategoryEntity> categoryEntities) {
+        categoryService.updateBatchById(categoryEntities);
+        return R.ok();
+    }
+
+    /**
      * 删除
      */
     @RequestMapping("/delete")
