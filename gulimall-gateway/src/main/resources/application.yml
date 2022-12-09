@@ -10,6 +10,13 @@ spring:
           uri: https://www.qq.com/
           predicates:
             - Query=url, qq
+        # 将路径为Path=/api/thirdparty/**转发至第三方服务模块
+        - id: third_party_route
+          uri: lb://gulimall-third-party
+          predicates:
+            - Path=/api/thirdparty/**
+          filters:
+            - RewritePath=/api/thirdparty/?(?<segment>.*), /$\{segment}
         # 这个需要放在admin_route的前面，范围更小点，不然请求这个路径会先匹配admin_route
         - id: product-route
           uri: lb://gulimall-product
