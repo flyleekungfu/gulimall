@@ -2,10 +2,13 @@ package com.flylee.gulimall.product.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-
-import java.io.Serializable;
-import java.util.Date;
 import lombok.Data;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import java.io.Serializable;
 
 /**
  * 品牌
@@ -39,14 +42,19 @@ public class BrandEntity implements Serializable {
 	/**
 	 * 显示状态[0-不显示；1-显示]
 	 */
+	@NotNull
 	private Integer showStatus;
 	/**
 	 * 检索首字母
 	 */
+	@NotBlank
+	@Pattern(regexp = "/^[a-zA-Z]$/")
 	private String firstLetter;
 	/**
 	 * 排序
 	 */
+	@NotNull
+	@Min(value = 0)
 	private Integer sort;
 
 }
