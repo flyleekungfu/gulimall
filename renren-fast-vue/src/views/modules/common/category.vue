@@ -48,6 +48,8 @@ export default {
     },
     nodeClick(data, node, component) {
       console.log('子组件category的节点被点击', data, node, component)
+      // 向父组件发送事件
+      this.$emit('tree-node-click', data, node, component)
     }
   }
 }

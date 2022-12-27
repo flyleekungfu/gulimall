@@ -1,19 +1,14 @@
 package com.flylee.gulimall.product.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.flylee.gulimall.product.entity.AttrGroupEntity;
-import com.flylee.gulimall.product.service.AttrGroupService;
 import com.flylee.gulimall.common.utils.PageUtils;
 import com.flylee.gulimall.common.utils.R;
+import com.flylee.gulimall.product.entity.AttrGroupEntity;
+import com.flylee.gulimall.product.service.AttrGroupService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.Map;
 
 
 
@@ -33,9 +28,10 @@ public class AttrGroupController {
     /**
      * 列表
      */
-    @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params){
-        PageUtils page = attrGroupService.queryPage(params);
+    @RequestMapping("/list/{catelogId}")
+    public R list(@RequestParam Map<String, Object> params, @PathVariable long catelogId){
+        //PageUtils page = attrGroupService.queryPage(params);
+        PageUtils page = attrGroupService.queryPage(params, catelogId);
 
         return R.ok().put("page", page);
     }
