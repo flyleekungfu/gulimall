@@ -24,6 +24,12 @@ spring:
             - Path=/api/product/**
           filters:
             - RewritePath=/api/?(?<segment>.*), /$\{segment}
+        - id: member-route
+          uri: lb://gulimall-member
+          predicates:
+              - Path=/api/member/**
+          filters:
+              - RewritePath=/api/?(?<segment>.*), /$\{segment}
         #将路径为Path=/api/**转发至后台管理
         - id: admin_route
           uri: lb://renren-fast

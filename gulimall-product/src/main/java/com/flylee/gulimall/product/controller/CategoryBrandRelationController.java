@@ -1,19 +1,16 @@
 package com.flylee.gulimall.product.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.flylee.gulimall.product.entity.CategoryBrandRelationEntity;
-import com.flylee.gulimall.product.service.CategoryBrandRelationService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.flylee.gulimall.common.utils.PageUtils;
 import com.flylee.gulimall.common.utils.R;
+import com.flylee.gulimall.product.entity.CategoryBrandRelationEntity;
+import com.flylee.gulimall.product.service.CategoryBrandRelationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 
@@ -40,6 +37,13 @@ public class CategoryBrandRelationController {
         return R.ok().put("page", page);
     }
 
+    @GetMapping("/catelog/list")
+    public R catelogList(@RequestParam Long brandId) {
+        QueryWrapper<CategoryBrandRelationEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("brand_id", brandId);
+        List<CategoryBrandRelationEntity> categoryBrandRelationEntities = categoryBrandRelationService.list(queryWrapper);
+        return R.ok().put("data", categoryBrandRelationEntities);
+    }
 
     /**
      * 信息
@@ -56,7 +60,8 @@ public class CategoryBrandRelationController {
      */
     @RequestMapping("/save")
     public R save(@RequestBody CategoryBrandRelationEntity categoryBrandRelation){
-		categoryBrandRelationService.save(categoryBrandRelation);
+		//categoryBrandRelationService.save(categoryBrandRelation);
+		categoryBrandRelationService.saveDetail(categoryBrandRelation);
 
         return R.ok();
     }
@@ -79,6 +84,12 @@ public class CategoryBrandRelationController {
 		categoryBrandRelationService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
+    }
+
+    @GetMapping("/brands/list")
+    public R getBrandsByCategory(@RequestParam("catId") Long catelogId) {
+        List<CategoryBrandRelationEntity> entities = categoryBrandRelationService.getBrandsByCayId(catelogId);
+        return R.ok().put("data", entities);
     }
 
 }

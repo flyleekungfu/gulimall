@@ -3,7 +3,9 @@ package com.flylee.gulimall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.flylee.gulimall.common.utils.PageUtils;
 import com.flylee.gulimall.product.entity.AttrGroupEntity;
+import com.flylee.gulimall.product.vo.AttrGroupWithAttrVo;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,5 +20,7 @@ public interface AttrGroupService extends IService<AttrGroupEntity> {
     PageUtils queryPage(Map<String, Object> params);
 
     PageUtils queryPage(Map<String, Object> params, long catelogId);
+
+    List<AttrGroupWithAttrVo> getAttrGroupWithAttrByCatelogId(Long catelogId);
 }
 

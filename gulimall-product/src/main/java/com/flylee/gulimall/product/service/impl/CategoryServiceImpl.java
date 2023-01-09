@@ -10,9 +10,7 @@ import com.flylee.gulimall.product.entity.CategoryEntity;
 import com.flylee.gulimall.product.service.CategoryService;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -40,6 +38,22 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     @Override
     public void removeMenuByIds(List<Long> ids) {
         baseMapper.deleteBatchIds(ids);
+    }
+
+    @Override
+    public Long[] findCategoryPathById(Long categoryId) {
+        List<Long> categoryPaths = new ArrayList<>();
+        findPath(categoryId, categoryPaths);
+        Collections.reverse(categoryPaths);
+        return categoryPaths.toArray(new Long[categoryPaths.size()]);
+    }
+
+    private void findPath(Long categoryId, List<Long> categoryPaths) {
+        if (categoryId != 0) {
+            categoryPaths.add(categoryId);
+            CategoryEntity byId = getById(categoryId);
+            findPath(byId.getParentCid(), categoryPaths);
+        }
     }
 
     private List<CategoryEntity> getChildren(CategoryEntity categoryEntity, List<CategoryEntity> categoryEntities) {

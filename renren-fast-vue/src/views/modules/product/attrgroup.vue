@@ -70,6 +70,7 @@
             width="150"
             label="操作">
             <template slot-scope="scope">
+              <el-button type="text" size="small" @click="relationHandle(scope.row.attrGroupId)">关联</el-button>
               <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.attrGroupId)">修改</el-button>
               <el-button type="text" size="small" @click="deleteHandle(scope.row.attrGroupId)">删除</el-button>
             </template>
@@ -86,6 +87,9 @@
         </el-pagination>
         <!-- 弹窗, 新增 / 修改 -->
         <add-or-update v-if="addOrUpdateVisible" ref="addOrUpdate" @refreshDataList="getDataList"></add-or-update>
+
+        <!-- 修改关联关系 -->
+        <relation-update v-if="relationVisible" ref="relationUpdate" @refreshData="getDataList"></relation-update>
       </div>
     </el-col>
   </el-row>
@@ -94,6 +98,8 @@
 <script>
   import Category from '../common/category'
   import AddOrUpdate from './attrgroup-add-or-update'
+  import RelationUpdate from "./attr-group-relation";
+
   export default {
     data () {
       return {
@@ -107,17 +113,26 @@
         totalPage: 0,
         dataListLoading: false,
         dataListSelections: [],
-        addOrUpdateVisible: false
+        addOrUpdateVisible: false,
+        relationVisible: false
       }
     },
     components: {
       Category,
-      AddOrUpdate
+      AddOrUpdate,
+      RelationUpdate
     },
     activated () {
       this.getDataList()
     },
     methods: {
+      //处理分组与属性的关联
+      relationHandle(groupId) {
+        this.relationVisible = true;
+        this.$nextTick(() => {
+          this.$refs.relationUpdate.init(groupId);
+        });
+      },
       // 感知树节点被点击
       treeNodeClick(data, node, component) {
         console.log('父组件：树节点被点击', data, node, component)
@@ -181,7 +196,7 @@
           type: 'warning'
         }).then(() => {
           this.$http({
-            url: this.$http.adornUrl('/member/pmsattrgroup/delete'),
+            url: this.$http.adornUrl('/product/attrgroup/delete'),
             method: 'post',
             data: this.$http.adornData(ids, false)
           }).then(({data}) => {

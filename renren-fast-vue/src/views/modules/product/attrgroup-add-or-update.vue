@@ -69,6 +69,8 @@
     },
     methods: {
       init (id) {
+        this.dataForm.catelogId = 0
+        this.dataForm.catelogPath = []
         this.dataForm.attrGroupId = id || 0
         this.visible = true
         this.$nextTick(() => {
@@ -80,11 +82,12 @@
               params: this.$http.adornParams()
             }).then(({data}) => {
               if (data && data.code === 0) {
-                this.dataForm.attrGroupName = data.pmsAttrGroup.attrGroupName
-                this.dataForm.sort = data.pmsAttrGroup.sort
-                this.dataForm.descript = data.pmsAttrGroup.descript
-                this.dataForm.icon = data.pmsAttrGroup.icon
-                this.dataForm.catelogId = data.pmsAttrGroup.catelogId
+                this.dataForm.attrGroupName = data.attrGroup.attrGroupName
+                this.dataForm.sort = data.attrGroup.sort
+                this.dataForm.descript = data.attrGroup.descript
+                this.dataForm.icon = data.attrGroup.icon
+                this.dataForm.catelogId = data.attrGroup.catelogId
+                this.dataForm.catelogPath = data.attrGroup.catelogPath
               }
             })
           }

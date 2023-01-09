@@ -16,5 +16,15 @@
         <result property="showDesc" column="show_desc"/>
     </resultMap>
 
+    <delete id="deleteBatchRelation">
+        DELETE
+        FROM
+            pms_attr_attrgroup_relation
+        WHERE
+            <foreach collection="vos" item="item" separator=" OR ">
+                (attr_id = #{item.attrId} AND attr_group_id = #{item.attrGroupId})
+            </foreach>
+    </delete>
+
 
 </mapper>
