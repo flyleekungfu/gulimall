@@ -1,19 +1,15 @@
 package com.flylee.gulimall.coupon.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.flylee.gulimall.coupon.entity.SkuFullReductionEntity;
-import com.flylee.gulimall.coupon.service.SkuFullReductionService;
+import com.flylee.gulimall.common.to.SkuReductionTo;
 import com.flylee.gulimall.common.utils.PageUtils;
 import com.flylee.gulimall.common.utils.R;
+import com.flylee.gulimall.coupon.entity.SkuFullReductionEntity;
+import com.flylee.gulimall.coupon.service.SkuFullReductionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.Map;
 
 
 
@@ -78,6 +74,12 @@ public class SkuFullReductionController {
     public R delete(@RequestBody Long[] ids){
 		skuFullReductionService.removeByIds(Arrays.asList(ids));
 
+        return R.ok();
+    }
+
+    @PostMapping("/saveInfo")
+    public R saveSkuReductionTo(@RequestBody SkuReductionTo skuReductionTo) {
+        skuFullReductionService.saveSkuReductionTo(skuReductionTo);
         return R.ok();
     }
 

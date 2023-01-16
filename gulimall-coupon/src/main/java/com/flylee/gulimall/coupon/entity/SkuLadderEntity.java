@@ -2,11 +2,11 @@ package com.flylee.gulimall.coupon.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-
-import java.math.BigDecimal;
-import java.io.Serializable;
-import java.util.Date;
 import lombok.Data;
+import lombok.experimental.Accessors;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 商品阶梯价格
@@ -16,6 +16,7 @@ import lombok.Data;
  * @date 2022-06-23 19:30:58
  */
 @Data
+@Accessors(chain = true)
 @TableName("sms_sku_ladder")
 public class SkuLadderEntity implements Serializable {
 	private static final long serialVersionUID = 1L;

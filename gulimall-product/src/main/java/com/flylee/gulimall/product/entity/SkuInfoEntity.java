@@ -2,11 +2,11 @@ package com.flylee.gulimall.product.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-
-import java.math.BigDecimal;
-import java.io.Serializable;
-import java.util.Date;
 import lombok.Data;
+import lombok.experimental.Accessors;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * sku信息
@@ -16,6 +16,7 @@ import lombok.Data;
  * @date 2022-06-23 07:53:32
  */
 @Data
+@Accessors(chain = true)
 @TableName("pms_sku_info")
 public class SkuInfoEntity implements Serializable {
 	private static final long serialVersionUID = 1L;

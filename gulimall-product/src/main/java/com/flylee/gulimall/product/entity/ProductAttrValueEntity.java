@@ -2,10 +2,12 @@ package com.flylee.gulimall.product.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.Date;
-import lombok.Data;
 
 /**
  * spu属性值
@@ -15,6 +17,9 @@ import lombok.Data;
  * @date 2022-06-23 07:53:32
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @TableName("pms_product_attr_value")
 public class ProductAttrValueEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
