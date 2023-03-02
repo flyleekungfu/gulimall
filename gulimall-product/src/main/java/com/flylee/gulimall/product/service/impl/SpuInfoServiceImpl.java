@@ -19,10 +19,10 @@ import com.flylee.gulimall.product.vo.Attr;
 import com.flylee.gulimall.product.vo.BaseAttrs;
 import com.flylee.gulimall.product.vo.Skus;
 import com.flylee.gulimall.product.vo.SpuSaveVo;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -119,7 +119,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
                 // 5.2）、sku的图片信息；pms_sku_image
                 Long skuId = skuInfoEntity.getSkuId();
-                List<SkuImagesEntity> skuImagesEntities = sku.getImages().stream().filter(i -> StringUtils.isNotEmpty(i.getImgUrl())).map(image -> {
+                List<SkuImagesEntity> skuImagesEntities = sku.getImages().stream().filter(i -> !StringUtils.isEmpty(i.getImgUrl())).map(image -> {
                     SkuImagesEntity skuImagesEntity = new SkuImagesEntity();
                     BeanUtils.copyProperties(image, skuImagesEntity);
                     skuImagesEntity.setSkuId(skuId);
@@ -155,10 +155,25 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     public PageUtils queryPageByCondition(Map<String, Object> params) {
         LambdaQueryWrapper<SpuInfoEntity> queryWrapper = Wrappers.lambdaQuery();
         String key = (String) params.get("key");
-        if (StringUtils.isNotEmpty(key)) {
+        if (!StringUtils.isEmpty(key)) {
             queryWrapper.and(q -> q.eq(SpuInfoEntity::getId, key).or().like(SpuInfoEntity::getSpuName, key));
         }
 
+        // status=1 and (id=1 or spu_name like xxx)
+        String status = (String) params.get("status");
+        if (!StringUtils.isEmpty(status)) {
+            queryWrapper.eq(SpuInfoEntity::getPublishStatus, Integer.parseInt(status));
+        }
+
+        String brandId = (String) params.get("brandId");
+        if (!StringUtils.isEmpty(brandId) && !"0".equals(brandId)) {
+            queryWrapper.eq(SpuInfoEntity::getBrandId, Long.parseLong(brandId));
+        }
+
+        String catelogId = (String) params.get("catelogId");
+        if (!StringUtils.isEmpty(catelogId) && !"0".equals(catelogId)) {
+            queryWrapper.eq(SpuInfoEntity::getCatalogId, Long.parseLong(catelogId));
+        }
 
         IPage<SpuInfoEntity> page = this.page(new Query<SpuInfoEntity>().getPage(params), queryWrapper);
 

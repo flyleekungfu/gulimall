@@ -3,6 +3,7 @@ package com.flylee.gulimall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.flylee.gulimall.common.utils.PageUtils;
 import com.flylee.gulimall.product.entity.SkuInfoEntity;
+import com.flylee.gulimall.product.param.SkuInfoListParam;
 
 import java.util.Map;
 
@@ -16,5 +17,7 @@ import java.util.Map;
 public interface SkuInfoService extends IService<SkuInfoEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    PageUtils queryPageByCondition(SkuInfoListParam param);
 }
 

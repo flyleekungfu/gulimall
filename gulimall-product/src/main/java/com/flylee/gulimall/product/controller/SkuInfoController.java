@@ -1,19 +1,17 @@
 package com.flylee.gulimall.product.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
+import com.flylee.gulimall.common.utils.PageUtils;
+import com.flylee.gulimall.common.utils.R;
+import com.flylee.gulimall.product.entity.SkuInfoEntity;
+import com.flylee.gulimall.product.param.SkuInfoListParam;
+import com.flylee.gulimall.product.service.SkuInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.flylee.gulimall.product.entity.SkuInfoEntity;
-import com.flylee.gulimall.product.service.SkuInfoService;
-import com.flylee.gulimall.common.utils.PageUtils;
-import com.flylee.gulimall.common.utils.R;
+import java.util.Arrays;
 
 
 
@@ -34,8 +32,8 @@ public class SkuInfoController {
      * 列表
      */
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params){
-        PageUtils page = skuInfoService.queryPage(params);
+    public R list(SkuInfoListParam param){
+        PageUtils page = skuInfoService.queryPageByCondition(param);
 
         return R.ok().put("page", page);
     }
