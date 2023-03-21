@@ -3,6 +3,7 @@ package com.flylee.gulimall.ware.controller;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.flylee.gulimall.ware.WareSkuPageParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,8 +35,8 @@ public class WareSkuController {
      * 列表
      */
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params){
-        PageUtils page = wareSkuService.queryPage(params);
+    public R list(WareSkuPageParam pageParam){
+        PageUtils page = wareSkuService.queryByCondition(pageParam);
 
         return R.ok().put("page", page);
     }

@@ -1,19 +1,17 @@
 package com.flylee.gulimall.ware.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
+import com.flylee.gulimall.common.utils.PageUtils;
+import com.flylee.gulimall.common.utils.R;
+import com.flylee.gulimall.ware.entity.PurchaseDetailEntity;
+import com.flylee.gulimall.ware.param.PurchaseDetailPageParam;
+import com.flylee.gulimall.ware.service.PurchaseDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.flylee.gulimall.ware.entity.PurchaseDetailEntity;
-import com.flylee.gulimall.ware.service.PurchaseDetailService;
-import com.flylee.gulimall.common.utils.PageUtils;
-import com.flylee.gulimall.common.utils.R;
+import java.util.Arrays;
 
 
 
@@ -34,12 +32,11 @@ public class PurchaseDetailController {
      * 列表
      */
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params){
-        PageUtils page = purchaseDetailService.queryPage(params);
+    public R list(PurchaseDetailPageParam pageParam){
+        PageUtils page = purchaseDetailService.queryByCondition(pageParam);
 
         return R.ok().put("page", page);
     }
-
 
     /**
      * 信息

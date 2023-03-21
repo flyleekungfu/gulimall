@@ -2,6 +2,7 @@ package com.flylee.gulimall.ware.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.flylee.gulimall.common.utils.PageUtils;
+import com.flylee.gulimall.ware.WareSkuPageParam;
 import com.flylee.gulimall.ware.entity.WareSkuEntity;
 
 import java.util.Map;
@@ -16,5 +17,9 @@ import java.util.Map;
 public interface WareSkuService extends IService<WareSkuEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    PageUtils queryByCondition(WareSkuPageParam pageParam);
+
+    void addStock(Long skuId, Long wareId, Integer skuNum);
 }
 

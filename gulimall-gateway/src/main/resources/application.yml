@@ -24,12 +24,23 @@ spring:
             - Path=/api/product/**
           filters:
             - RewritePath=/api/?(?<segment>.*), /$\{segment}
-        - id: member-route
+
+        # 将路径为Path=/api/member/**转发至会员服务
+        - id: member_route
           uri: lb://gulimall-member
           predicates:
               - Path=/api/member/**
           filters:
               - RewritePath=/api/?(?<segment>.*), /$\{segment}
+
+        # 将路径为Path=/api/ware/**转发至仓库服务
+        - id: ware_route
+          uri: lb://gulimall-ware
+          predicates:
+            - Path=/api/ware/**
+          filters:
+            - RewritePath=/api/?(?<segment>.*), /$\{segment}
+
         #将路径为Path=/api/**转发至后台管理
         - id: admin_route
           uri: lb://renren-fast

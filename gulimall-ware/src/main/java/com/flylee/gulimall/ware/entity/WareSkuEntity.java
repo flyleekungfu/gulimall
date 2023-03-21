@@ -2,10 +2,10 @@ package com.flylee.gulimall.ware.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.util.Date;
-import lombok.Data;
 
 /**
  * 商品库存
@@ -15,6 +15,7 @@ import lombok.Data;
  * @date 2022-06-23 19:49:23
  */
 @Data
+@Accessors(chain = true)
 @TableName("wms_ware_sku")
 public class WareSkuEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
