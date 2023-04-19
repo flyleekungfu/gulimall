@@ -65,6 +65,7 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                 .eq(WareSkuEntity::getWareId, wareId)
                 .last("limit 1"));
         if (wareSkuEntity == null) {
+            wareSkuEntity = new WareSkuEntity();
             // 没有库存则新增
             wareSkuEntity.setSkuId(skuId)
                     .setWareId(wareId)
