@@ -26,5 +26,18 @@
             </foreach>
     </delete>
 
+    <select id="selectSearchAttrIds" resultType="java.lang.Long">
+        SELECT
+            attr_id
+        FROM
+            pms_attr
+        WHERE
+            attr_id IN
+            <foreach collection="attrIds" item="attrId" open="(" close=")" separator=",">
+                #{attrId}
+            </foreach>
+          AND search_type = 1;
+    </select>
+
 
 </mapper>

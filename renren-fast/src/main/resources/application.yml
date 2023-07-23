@@ -15,10 +15,10 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 127.0.0.1
+        server-addr: 127.0.0.1:8847
       config:
         name: renren-fast
-        server-addr: 127.0.0.1
+        server-addr: 127.0.0.1:8847
         namespace: renren-fast
   # 环境 dev|test|prod
   profiles:

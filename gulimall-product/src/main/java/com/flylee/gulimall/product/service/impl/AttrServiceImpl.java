@@ -211,4 +211,9 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         attrDao.deleteBatchRelation(vos);
     }
 
+    @Override
+    public List<Long> selectSearchAttrIds(List<Long> attrIds) {
+        return attrDao.selectSearchAttrIds(attrIds);
+    }
+
 }

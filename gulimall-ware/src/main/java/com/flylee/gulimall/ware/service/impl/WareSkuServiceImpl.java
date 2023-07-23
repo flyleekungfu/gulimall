@@ -13,11 +13,14 @@ import com.flylee.gulimall.ware.dao.WareSkuDao;
 import com.flylee.gulimall.ware.entity.WareSkuEntity;
 import com.flylee.gulimall.ware.feign.ProductFeignService;
 import com.flylee.gulimall.ware.service.WareSkuService;
+import com.flylee.gulimall.common.to.SkuHasStockVO;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service("wareSkuService")
@@ -86,6 +89,18 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             wareSkuDao.addStock(skuId, wareId, skuNum);
         }
 
+    }
+
+    @Override
+    public List<SkuHasStockVO> getSkuHasStock(List<Long> skuIds) {
+        return skuIds.stream().map(skuId -> {
+            Long count = this.baseMapper.getSkuStock(skuId);
+
+            SkuHasStockVO skuHasStockVO = new SkuHasStockVO();
+            skuHasStockVO.setSkuId(skuId);
+            skuHasStockVO.setHasStock(count != null && count > 0);
+            return skuHasStockVO;
+        }).collect(Collectors.toList());
     }
 
 }

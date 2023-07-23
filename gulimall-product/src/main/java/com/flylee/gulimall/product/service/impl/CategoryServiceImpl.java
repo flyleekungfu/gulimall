@@ -2,12 +2,14 @@ package com.flylee.gulimall.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flylee.gulimall.common.utils.PageUtils;
 import com.flylee.gulimall.common.utils.Query;
 import com.flylee.gulimall.product.dao.CategoryDao;
 import com.flylee.gulimall.product.entity.CategoryEntity;
 import com.flylee.gulimall.product.service.CategoryService;
+import com.flylee.gulimall.product.vo.Catalog2VO;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -46,6 +48,36 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         findPath(categoryId, categoryPaths);
         Collections.reverse(categoryPaths);
         return categoryPaths.toArray(new Long[categoryPaths.size()]);
+    }
+
+    @Override
+    public List<CategoryEntity> getLevel1Categories() {
+        return list(Wrappers.<CategoryEntity>lambdaQuery()
+                .eq(CategoryEntity::getParentCid, 0));
+    }
+
+    @Override
+    public Map<String, List<Catalog2VO>> getCatalogJson() {
+        // 1、查询所有一级分类
+        List<CategoryEntity> level1Categories = getLevel1Categories();
+
+        // 2、封装数据
+        return level1Categories.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+            // 查询二级分类
+            List<CategoryEntity> level2Categories = list(Wrappers.<CategoryEntity>lambdaQuery()
+                    .eq(CategoryEntity::getParentCid, v.getCatId()));
+
+            return level2Categories.stream().map(category2 -> {
+                // 查询三级分类
+                List<CategoryEntity> level3Categories = list(Wrappers.<CategoryEntity>lambdaQuery()
+                        .eq(CategoryEntity::getParentCid, category2));
+                List<Catalog2VO.Catalog3VO> catalog3VOList = level3Categories.stream()
+                        .map(category3 -> new Catalog2VO.Catalog3VO(category2.getCatId().toString(), category3.getCatId().toString(), category3.getName()))
+                        .collect(Collectors.toList());
+
+                return new Catalog2VO(v.getCatId().toString(), catalog3VOList, category2.getCatId().toString(), category2.getName());
+            }).collect(Collectors.toList());
+        }));
     }
 
     private void findPath(Long categoryId, List<Long> categoryPaths) {

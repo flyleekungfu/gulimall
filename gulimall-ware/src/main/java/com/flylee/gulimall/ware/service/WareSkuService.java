@@ -1,10 +1,12 @@
 package com.flylee.gulimall.ware.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.flylee.gulimall.common.to.SkuHasStockVO;
 import com.flylee.gulimall.common.utils.PageUtils;
 import com.flylee.gulimall.ware.WareSkuPageParam;
 import com.flylee.gulimall.ware.entity.WareSkuEntity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,5 +23,7 @@ public interface WareSkuService extends IService<WareSkuEntity> {
     PageUtils queryByCondition(WareSkuPageParam pageParam);
 
     void addStock(Long skuId, Long wareId, Integer skuNum);
+
+    List<SkuHasStockVO> getSkuHasStock(List<Long> skuIds);
 }
 

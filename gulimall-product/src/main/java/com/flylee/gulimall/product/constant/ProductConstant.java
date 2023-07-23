@@ -1,5 +1,8 @@
 package com.flylee.gulimall.product.constant;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 /**
  * 产品常量
  *
@@ -21,5 +24,16 @@ public class ProductConstant {
         public int getCode() {
             return code;
         }
+    }
+
+    @AllArgsConstructor
+    @Getter
+    public enum StatusEnum {
+        NEW_SPU(0, "新建"),
+        SPU_UP(1, "商品上架"),
+        SPU_DOWN(2, "商品下架");
+
+        private final int code;
+        private final String msg;
     }
 }

@@ -6,6 +6,8 @@ import com.flylee.gulimall.product.vo.AttrGroupRelationVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * 商品属性
  * 
@@ -17,4 +19,6 @@ import org.apache.ibatis.annotations.Param;
 public interface AttrDao extends BaseMapper<AttrEntity> {
 
     void deleteBatchRelation(@Param("vos") AttrGroupRelationVo[] vos);
+
+    List<Long> selectSearchAttrIds(@Param("attrIds") List<Long> attrIds);
 }
