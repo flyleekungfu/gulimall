@@ -21,7 +21,7 @@ spring:
         - id: product-route
           uri: lb://gulimall-product
           predicates:
-            - Path=/api/product/**
+            - Path=/api/product/**, /hello
           filters:
             - RewritePath=/api/?(?<segment>.*), /$\{segment}
 
@@ -49,3 +49,8 @@ spring:
           filters:
             # 重写路径，没有重写路径，请求：{gateway-url}/api/user，会转发到：{api-url}/api/user，配置后为：{api-url}/renre-fast/user
             - RewritePath=/api/?(?<segment>.*), /renren-fast/$\{segment}
+
+        - id: gulimall_host_route
+          uri: lb://gulimall-product
+          predicates:
+            - Host=**.gulimall.com

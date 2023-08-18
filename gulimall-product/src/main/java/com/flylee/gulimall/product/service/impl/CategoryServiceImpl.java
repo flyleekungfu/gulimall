@@ -1,5 +1,7 @@
 package com.flylee.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -10,20 +12,29 @@ import com.flylee.gulimall.product.dao.CategoryDao;
 import com.flylee.gulimall.product.entity.CategoryEntity;
 import com.flylee.gulimall.product.service.CategoryService;
 import com.flylee.gulimall.product.vo.Catalog2VO;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
 @Service("categoryService")
+@RequiredArgsConstructor
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
+
+    private final StringRedisTemplate stringRedisTemplate;
+
+//    private Map<String, Map<String, List<Catalog2VO>>> catalogCacheMap = new HashMap<>();
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<CategoryEntity> page = this.page(
                 new Query<CategoryEntity>().getPage(params),
-                new QueryWrapper<CategoryEntity>()
+                new QueryWrapper<>()
         );
 
         return new PageUtils(page);
@@ -58,19 +69,72 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Override
     public Map<String, List<Catalog2VO>> getCatalogJson() {
+//        本地缓存
+//        String key = "catalogJson";
+//        Map<String, List<Catalog2VO>> catalogMap = this.catalogCacheMap.get(key);
+//        if (catalogMap == null) {
+//            catalogMap = getCatalogJSONFromDB();
+//            this.catalogCacheMap.put(key, catalogMap);
+//        }
+//
+//        return catalogMap;
+
+        // 1、加入缓存逻辑，缓存中存的数据是JSON字符串
+        // JSON跨语言、跨平台兼容
+        String catalogJSONStr = stringRedisTemplate.opsForValue().get("catalogJSON");
+        if (StringUtils.isEmpty(catalogJSONStr)) {
+            // 2、缓存中没有，查询数据库
+            System.out.println("缓存未命中...查询数据库...");
+            Map<String, List<Catalog2VO>> catalogJSONFromDB = getCatalogJSONFromDBWithRedisLock();
+            // 3、查到的数据再放入缓存，将对象转为JSON字符串放入缓存
+            stringRedisTemplate.opsForValue().set("catalogJSON", JSON.toJSONString(catalogJSONFromDB), 1, TimeUnit.DAYS);
+            return catalogJSONFromDB;
+        }
+
+        System.out.println("缓存命中...直接返回...");
+        return JSON.parseObject(catalogJSONStr, new TypeReference<Map<String, List<Catalog2VO>>>(){});
+    }
+
+    private Map<String, List<Catalog2VO>> getCatalogJSONFromDBWithRedisLock() {
+        Boolean lock = stringRedisTemplate.opsForValue().setIfAbsent("lock", "111", 300, TimeUnit.SECONDS);
+        if (Boolean.TRUE.equals(lock)) {
+            System.out.println("加锁成功....");
+            // 加锁成功... 执行业务
+            Map<String, List<Catalog2VO>> dataFromDB = getDataFromDB();
+            stringRedisTemplate.delete("lock");
+            return dataFromDB;
+        } else {
+            System.out.println("加锁失败...");
+            // 加锁失败...重试
+            // 休眠100ms重试，自旋
+            return getCatalogJSONFromDBWithLocalLock();
+        }
+    }
+
+    private Map<String, List<Catalog2VO>> getDataFromDB() {
+        // 得到锁之后，再去缓存确认一次，如果没有才需要继续查询
+        String catalogJSONStr = stringRedisTemplate.opsForValue().get("catalogJSON");
+        if (!StringUtils.isEmpty(catalogJSONStr)) {
+            // 缓存不为null直接返回
+            return JSON.parseObject(catalogJSONStr, new TypeReference<Map<String, List<Catalog2VO>>>() {
+            });
+        }
+
+        System.out.println("查询了数据库......");
+
+        List<CategoryEntity> categoryEntities = list();
+
         // 1、查询所有一级分类
-        List<CategoryEntity> level1Categories = getLevel1Categories();
+        List<CategoryEntity> level1Categories = getCategoriesByParentCid(categoryEntities, 0L);
 
         // 2、封装数据
         return level1Categories.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
             // 查询二级分类
-            List<CategoryEntity> level2Categories = list(Wrappers.<CategoryEntity>lambdaQuery()
-                    .eq(CategoryEntity::getParentCid, v.getCatId()));
+            List<CategoryEntity> level2Categories = getCategoriesByParentCid(categoryEntities, v.getCatId());
 
             return level2Categories.stream().map(category2 -> {
                 // 查询三级分类
-                List<CategoryEntity> level3Categories = list(Wrappers.<CategoryEntity>lambdaQuery()
-                        .eq(CategoryEntity::getParentCid, category2));
+                List<CategoryEntity> level3Categories = getCategoriesByParentCid(categoryEntities, category2.getCatId());
                 List<Catalog2VO.Catalog3VO> catalog3VOList = level3Categories.stream()
                         .map(category3 -> new Catalog2VO.Catalog3VO(category2.getCatId().toString(), category3.getCatId().toString(), category3.getName()))
                         .collect(Collectors.toList());
@@ -78,6 +142,17 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                 return new Catalog2VO(v.getCatId().toString(), catalog3VOList, category2.getCatId().toString(), category2.getName());
             }).collect(Collectors.toList());
         }));
+    }
+
+    private Map<String, List<Catalog2VO>> getCatalogJSONFromDBWithLocalLock() {
+        synchronized (this) {
+            // 得到锁之后，再去缓存确认一次，如果没有才需要继续查询
+            return getDataFromDB();
+        }
+    }
+
+    private List<CategoryEntity> getCategoriesByParentCid(List<CategoryEntity> categoryEntities, long parentCid) {
+        return categoryEntities.stream().filter(c -> c.getParentCid() == parentCid).collect(Collectors.toList());
     }
 
     private void findPath(Long categoryId, List<Long> categoryPaths) {
