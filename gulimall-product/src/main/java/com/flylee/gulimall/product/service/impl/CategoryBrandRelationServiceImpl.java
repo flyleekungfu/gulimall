@@ -2,6 +2,7 @@ package com.flylee.gulimall.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.flylee.gulimall.common.utils.PageUtils;
 import com.flylee.gulimall.common.utils.Query;
@@ -52,6 +53,13 @@ public class CategoryBrandRelationServiceImpl extends ServiceImpl<CategoryBrandR
     @Override
     public List<CategoryBrandRelationEntity> getBrandsByCayId(Long catelogId) {
         return baseMapper.selectList(new QueryWrapper<CategoryBrandRelationEntity>().eq("catelog_id", catelogId));
+    }
+
+    @Override
+    public void updateCategory(Long catId, String name) {
+        update(Wrappers.<CategoryBrandRelationEntity>lambdaUpdate()
+                .set(CategoryBrandRelationEntity::getCatelogName, name)
+                .eq(CategoryBrandRelationEntity::getCatelogId, catId));
     }
 
 }

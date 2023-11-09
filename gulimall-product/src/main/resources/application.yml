@@ -24,6 +24,8 @@ spring:
     cache: true
   redis:
     password: 888888
+    host: localhost
+    port: 6379
 
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml

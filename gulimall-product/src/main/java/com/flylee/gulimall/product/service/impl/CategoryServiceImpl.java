@@ -11,15 +11,20 @@ import com.flylee.gulimall.common.utils.PageUtils;
 import com.flylee.gulimall.common.utils.Query;
 import com.flylee.gulimall.product.dao.CategoryDao;
 import com.flylee.gulimall.product.entity.CategoryEntity;
+import com.flylee.gulimall.product.service.CategoryBrandRelationService;
 import com.flylee.gulimall.product.service.CategoryService;
 import com.flylee.gulimall.product.vo.Catalog2VO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +37,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     private final StringRedisTemplate redisTemplate;
     private final RedissonClient redisson;
+    private final CategoryBrandRelationService relationService;
 
 //    private Map<String, Map<String, List<Catalog2VO>>> catalogCacheMap = new HashMap<>();
 
@@ -66,13 +72,50 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return categoryPaths.toArray(new Long[categoryPaths.size()]);
     }
 
+    /**
+     * 1、每一个需要缓存的数据我们都来指定要放到哪个名字的缓存。【缓存的分区（按照业务类型分）】
+     * 2、@Cacheable("category")
+     *      代表当前方法的结果需要缓存，如果缓存中有，方法不用调用
+     *      如果缓存中没有，会调用方法，最后将方法的结果放入缓存
+     * 3、默认行为
+     *      1）、如果缓存中有，方法不用调用
+     *      2）、key默认自动生成，缓存的名字：SimpleKey[]（自主生成的key值），Redis中的键是value和key拼接起来的
+     *      3）、缓存的value的值。默认使用JDK序列化机制，将序列化后的数据存到Redis
+     *      4）、默认ttl时间 -1；
+     *    自定义
+     *      1）、指定生成的缓存使用的key
+     *      2）、指定缓存数据的存活时间
+     *      3）、将数据保存为JSON格式
+     *          CacheAutoConfiguration
+     *          自定义RedisCacheConfiguration即可
+     * 4、Spring-Cache的不足
+     *      1）、读模式：
+     *          缓存穿透：查询一个null数据。解决：缓存空数据：cache-null-values
+     *          缓存击穿：大量并发进来同时查询一个正好过期的数据。解决：加锁？默认是无加锁的；sync = true 加锁，解决击穿
+     *          缓存雪崩：大量的key同时过期。解决：加随机时间。加上过期时间：spring.cache.redis.time-to-live
+     *      2）、写模式（缓存与数据库一致）
+     *          1）、读写加锁
+     *          2）、引入Canal，感知到MySQL的更新去更新数据库
+     *          3）、读多写多，直接查询数据库
+     *   总结：
+     *      常规数据（读多写少，即时性，一致性要求不高的数据），完全可以使用Spring-Cache；写模式（只要缓存的数据有过期时间）
+     *      特殊数据，特殊设计
+     *
+     *   原理：
+     *      CacheManager(RedisCacheManager) -> Cache(RedisCache) -> Cache负责缓存的读写
+     *
+     *
+     */
+    @Cacheable(value = "category", key = "#root.methodName", sync = true)
     @Override
     public List<CategoryEntity> getLevel1Categories() {
+        System.out.println("进入方法");
         return list(Wrappers.<CategoryEntity>lambdaQuery()
                 .eq(CategoryEntity::getParentCid, 0));
     }
 
     @Override
+    @Cacheable(value = "category", key = "#root.methodName")
     public Map<String, List<Catalog2VO>> getCatalogJson() {
 //        本地缓存
 //        String key = "catalogJson";
@@ -105,6 +148,36 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
         System.out.println(DateUtil.formatDateTime(new Date()) + "：缓存命中...直接返回...");
         return JSON.parseObject(catalogJSONStr, new TypeReference<Map<String, List<Catalog2VO>>>(){});
+    }
+
+    /**
+     * 级联更新所有关联的数据
+     * @CacheEvict：失效模式
+     * 1、同时进行多种缓存操作 @Caching
+     * 2、指定删除某个分区下的所有数据 @CacheEvict(value = "category", allEntries = true)
+     * 3、存储同一类型的数据，都可以指定成同一个分区。分区名默认就是缓存的前缀
+     * @param category 分类
+     */
+    // 单个缓存失效
+//    @CacheEvict(value = "category", key = "'getLevel1Categories'")
+    // 多个缓存
+//    @Caching(evict = {
+//            @CacheEvict(value = "category", key = "'getLevel1Categories'"),
+//            @CacheEvict(value = "category", key = "'getCatalogJSON'")
+//    })
+    @CacheEvict(value = "category", allEntries = true)
+    // 双写模式
+    @CachePut
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void updateCascade(CategoryEntity category) {
+        this.updateById(category);
+
+        relationService.updateCategory(category.getCatId(), category.getName());
+
+        // 同时删除缓存中的数据
+        // 等待下次主动查询进行更新
+        // redis.del("catalogJSON")
     }
 
     private Map<String, List<Catalog2VO>> getCatalogJSONFromDBWithRedissonLock() {
